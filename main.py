@@ -1,9 +1,9 @@
 #!/home/julian/Apps/anaconda3/envs/mylab/bin/python
 # -*- encoding: utf-8 -*-
 '''
-@File    :   main.py
+@File    :   main_dev.py
 @Time    :   2019/08/15 19:32:17
-@Author  :   zfhx
+@Author  :   zfhxi
 @Version :   v1.0
 @Contact :   zifeihanxi@hotmailcom
 '''
@@ -128,28 +128,52 @@ def cat_course_table_as_lists(doc, infoDictList):
     '''
     soup = BeautifulSoup(doc, 'html.parser')
     tables = soup.find_all('tbody')
+    # 非实验课程
     tab = tables[0]
     crs_table = []
-    # 爬取每一格
+    # 爬取每一行
     trs = tab.find_all('tr')
     for tr in trs:
-        table = []
+        row = []
         td = tr.find_all('td')
         del td[0]
         del td[1:8]
         for p_td in td[:]:
-            cell = p_td.getText().split()
+            cell = p_td.getText().split('\n')[0]
             # 如果格子不空，加入table列表
             if len(cell) > 0:
-                table.append(cell[0])
+                row.append(cell)
             else:
-                if(len(table) == 0):
+                if(len(row) == 0):
                     # 如果为空，暂推测课程名空，那么当前老师也是上一门课的授课老师
-                    table.append(crs_table[-1][0])
+                    row.append(crs_table[-1][0])
                 else:
-                    table.append('nul')
-        crs_table.append(table)
+                    row.append('nul')
+        crs_table.append(row)
+    # 实验课
+    tab = tables[1]
+    trs = tab.find_all('tr')
+    for tr in trs:
+        row = []
+        td = tr.find_all('td')
+        del td[0]
+        del td[1:6]
+        del td[2]
+        for p_td in td[:]:
+            cell = p_td.getText().split('\n')[0]
+            # 如果格子不空，加入table列表
+            if len(cell) > 0:
+                row.append(cell)
+            else:
+                if(len(row) == 0):
+                    # 如果为空，暂推测课程名空，那么当前老师也是上一门课的授课老师
+                    row.append(crs_table[-1][0])
+                else:
+                    row.append('nul')
+        crs_table.append(row)
     return crs_table
+
+
 
 
 def cat_course_table_as_dicts(crs_tab):
@@ -164,7 +188,7 @@ def cat_course_table_as_dicts(crs_tab):
     crs_lists = []
     for one_crs in crs_tab:
         t_dict = {}
-        t_dict.update({'课程名称': one_crs[0]})
+        t_dict.update({'课程名称': one_crs[0].split(']')[1]})
         t_dict.update({'授课老师': one_crs[1]})
         t_dict.update({'星期': one_crs[3][0]})
 
@@ -217,6 +241,7 @@ def ics_maker(crs_dicts, Time):
     tz_utc_8 = pytz.timezone('Asia/Shanghai')
     cal = Calendar()
     for one_crs in crs_dicts:
+        # print(one_crs)
         for lesson_num in one_crs['节数']:
             if(lesson_num > 11):
                 lesson_num = 11
@@ -230,10 +255,14 @@ def ics_maker(crs_dicts, Time):
                 day_num = Week[one_crs['星期']]
                 crs_time_begin = Time[day_num-1][lesson_num-1] + \
                     timedelta(days=7*(week_num-1))
+                # crs_time_end=TimeEnd[day_num-1][lesson_num-1]+timedelta(days=7*(week_num-1))
                 crs_time_end = crs_time_begin+timedelta(minutes=45)
                 tmp_event.add(
                     'dtstart', crs_time_begin.replace(tzinfo=tz_utc_8))
                 tmp_event.add('dtend', crs_time_end.replace(tzinfo=tz_utc_8))
+
+                # tmp_event.add('rule','FREQ=WEEKLY')
+                # tmp_event.add('rule','COUNT='+str(one_crs['课程周次']))
                 cal.add_component(tmp_event)
     return cal
 
@@ -245,7 +274,7 @@ if __name__ == "__main__":
     # 学号
     sid = '2017xxxx'
     # 密码
-    pwd = '**********'
+    pwd = '*********'
     # 当前学期代号
     current_semester = '20181'
     # 教务网登录主页
@@ -270,7 +299,7 @@ if __name__ == "__main__":
     crs_dicts = cat_course_table_as_dicts(crs_tab)
     # 将课程字典转换为ics保存
     my_cal = ics_maker(crs_dicts, first_week)
-    f = open('mycrs_v1.0.ics', 'wb')
+    f = open('crs_v1.0.ics', 'wb')
     f.write(my_cal.to_ical())
     f.close()
     print('Script has been executed!')
