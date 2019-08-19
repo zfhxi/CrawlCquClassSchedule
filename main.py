@@ -1,10 +1,10 @@
-#!/home/julian/Apps/anaconda3/envs/mylab/bin/python
+#!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
-@File    :   main_dev.py
-@Time    :   2019/08/15 19:32:17
+@File    :   main.py
+@Time    :   2019/08/19 10:43:26
 @Author  :   zfhxi
-@Version :   v1.0
+@Version :   v1.1
 @Contact :   zifeihanxi@hotmailcom
 '''
 
@@ -16,7 +16,7 @@ import hashlib
 import os
 from bs4 import BeautifulSoup
 import re
-from icalendar import Calendar, Event
+from icalendar import Calendar, Event, vDatetime
 from datetime import date, datetime, timedelta, timezone
 import pytz
 from pytz import UTC
@@ -107,6 +107,7 @@ def get_first_week_timeline(first_day):
         datetime(first_day.year, first_day.month, first_day.day, 20, 50)
     ]
     time_line.append(first_day_timeline)
+    # 此处假设周末没有课
     i = 0
     while(i < 4):
         i += 1
@@ -240,8 +241,9 @@ def ics_maker(crs_dicts, Time):
     # 时区指定
     tz_utc_8 = pytz.timezone('Asia/Shanghai')
     cal = Calendar()
+    cal.add('version','2.0')
+    cal.add('x-wr-timezone',tz_utc_8)
     for one_crs in crs_dicts:
-        # print(one_crs)
         for lesson_num in one_crs['节数']:
             if(lesson_num > 11):
                 lesson_num = 11
@@ -255,14 +257,11 @@ def ics_maker(crs_dicts, Time):
                 day_num = Week[one_crs['星期']]
                 crs_time_begin = Time[day_num-1][lesson_num-1] + \
                     timedelta(days=7*(week_num-1))
-                # crs_time_end=TimeEnd[day_num-1][lesson_num-1]+timedelta(days=7*(week_num-1))
                 crs_time_end = crs_time_begin+timedelta(minutes=45)
-                tmp_event.add(
-                    'dtstart', crs_time_begin.replace(tzinfo=tz_utc_8))
-                tmp_event.add('dtend', crs_time_end.replace(tzinfo=tz_utc_8))
+                # tmp_event.add('dtstart', crs_time_begin)
+                tmp_event.add('dtstart', vDatetime(crs_time_begin))
+                tmp_event.add('dtend', vDatetime(crs_time_end))
 
-                # tmp_event.add('rule','FREQ=WEEKLY')
-                # tmp_event.add('rule','COUNT='+str(one_crs['课程周次']))
                 cal.add_component(tmp_event)
     return cal
 
