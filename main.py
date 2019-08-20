@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/home/julian/Apps/anaconda3/envs/mylab/bin/python
 # -*- encoding: utf-8 -*-
 '''
 @File    :   main.py
