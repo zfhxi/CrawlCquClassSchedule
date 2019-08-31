@@ -2,12 +2,11 @@
 # -*- encoding: utf-8 -*-
 '''
 @File    :   main.py
-@Time    :   2019/08/19 10:43:26
+@Time    :   2019/08/31 16:10:27
 @Author  :   zfhxi
-@Version :   v1.1
+@Version :   v1.2
 @Contact :   zifeihanxi@hotmailcom
 '''
-
 
 import http.cookiejar as cookielib
 import urllib.request as urllibre
@@ -140,38 +139,41 @@ def cat_course_table_as_lists(doc, infoDictList):
         del td[0]
         del td[1:8]
         for p_td in td[:]:
+            #获取标签的文本内容
             cell = p_td.getText().split('\n')[0]
-            # 如果格子不空，加入table列表
+            # 如果文本不为空，加入table列表
             if len(cell) > 0:
                 row.append(cell)
+            # 如果获取标签的文本为空，那么推测标签有hidevalue属性,并且hidevalue的值同上一标签
             else:
-                if(len(row) == 0):
-                    # 如果为空，暂推测课程名空，那么当前老师也是上一门课的授课老师
-                    row.append(crs_table[-1][0])
-                else:
-                    row.append('nul')
+                cell=p_td.get('hidevalue')
+                row.append(cell)
         crs_table.append(row)
     # 实验课
-    tab = tables[1]
-    trs = tab.find_all('tr')
-    for tr in trs:
-        row = []
-        td = tr.find_all('td')
-        del td[0]
-        del td[1:6]
-        del td[2]
-        for p_td in td[:]:
-            cell = p_td.getText().split('\n')[0]
-            # 如果格子不空，加入table列表
-            if len(cell) > 0:
-                row.append(cell)
-            else:
-                if(len(row) == 0):
-                    # 如果为空，暂推测课程名空，那么当前老师也是上一门课的授课老师
-                    row.append(crs_table[-1][0])
+    '''
+    has_lab_course=False
+    if(has_lab_course):
+        tab = tables[1]
+        trs = tab.find_all('tr')
+        for tr in trs:
+            row = []
+            td = tr.find_all('td')
+            del td[0]
+            del td[1:6]
+            del td[2]
+            for p_td in td[:]:
+                cell = p_td.getText().split('\n')[0]
+                # 如果格子不空，加入table列表
+                if len(cell) > 0:
+                    row.append(cell)
                 else:
-                    row.append('nul')
-        crs_table.append(row)
+                    if(len(row) == 0):
+                        # 如果为空，暂推测课程名空，那么当前老师也是上一门课的授课老师
+                        row.append(crs_table[-1][0])
+                    else:
+                        row.append('nul')
+            crs_table.append(row)
+    '''
     return crs_table
 
 
@@ -258,7 +260,6 @@ def ics_maker(crs_dicts, Time):
                 crs_time_begin = Time[day_num-1][lesson_num-1] + \
                     timedelta(days=7*(week_num-1))
                 crs_time_end = crs_time_begin+timedelta(minutes=45)
-                # tmp_event.add('dtstart', crs_time_begin)
                 tmp_event.add('dtstart', vDatetime(crs_time_begin))
                 tmp_event.add('dtend', vDatetime(crs_time_end))
 
@@ -273,9 +274,11 @@ if __name__ == "__main__":
     # 学号
     sid = '2017xxxx'
     # 密码
-    pwd = '*********'
+    pwd = '********'
     # 当前学期代号
-    current_semester = '20181'
+    current_semester = '20190'
+    # 开学第一天
+    first_day = date(2019, 9, 2)
     # 教务网登录主页
     index_url = 'http://202.202.1.41/_data/index_login.aspx'
     # 课表查看页面
@@ -283,9 +286,7 @@ if __name__ == "__main__":
 
     ##-----------------------------------------------------------##
 
-    # 第一天的时间线
-    first_day = date(2019, 9, 2)
-    # 第一周的时间线
+    # 生成第一周的时间线
     first_week = get_first_week_timeline(first_day)
     # 登录
     login_opener = stu_login(index_url, sid, pwd)
