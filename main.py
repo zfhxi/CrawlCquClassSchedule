@@ -2,11 +2,12 @@
 # -*- encoding: utf-8 -*-
 '''
 @File    :   main.py
-@Time    :   2019/08/31 16:10:27
+@Time    :   2019/09/02 12:56:27
 @Author  :   zfhxi
 @Version :   v1.2
 @Contact :   zifeihanxi@hotmailcom
 '''
+
 
 import http.cookiejar as cookielib
 import urllib.request as urllibre
@@ -106,9 +107,8 @@ def get_first_week_timeline(first_day):
         datetime(first_day.year, first_day.month, first_day.day, 20, 50)
     ]
     time_line.append(first_day_timeline)
-    # 此处假设周末没有课
     i = 0
-    while(i < 4):
+    while(i < 6):
         i += 1
         tmp_day_timeline = []
         for dt in time_line[-1]:
@@ -150,9 +150,7 @@ def cat_course_table_as_lists(doc, infoDictList):
                 row.append(cell)
         crs_table.append(row)
     # 实验课
-    '''
-    has_lab_course=False
-    if(has_lab_course):
+    if(len(tables)==2):
         tab = tables[1]
         trs = tab.find_all('tr')
         for tr in trs:
@@ -163,17 +161,12 @@ def cat_course_table_as_lists(doc, infoDictList):
             del td[2]
             for p_td in td[:]:
                 cell = p_td.getText().split('\n')[0]
-                # 如果格子不空，加入table列表
                 if len(cell) > 0:
                     row.append(cell)
                 else:
-                    if(len(row) == 0):
-                        # 如果为空，暂推测课程名空，那么当前老师也是上一门课的授课老师
-                        row.append(crs_table[-1][0])
-                    else:
-                        row.append('nul')
+                    cell=p_td.get('hidevalue')
+                    row.append(cell)
             crs_table.append(row)
-    '''
     return crs_table
 
 
@@ -252,8 +245,9 @@ def ics_maker(crs_dicts, Time):
             for week_num in one_crs['课程周次']:
                 tmp_event = Event()
                 tmp_event.add('summary', one_crs['课程名称'])
-                tmp_event.add('location', one_crs['上课地点'])
-                tmp_event.add('description', one_crs['授课老师'])
+                # 取消日程详情项显示授课老师姓名, 原因: 部分日历程序不显示详情
+                tmp_event.add('location', one_crs['上课地点']+' '+one_crs['授课老师'])
+                # tmp_event.add('description', one_crs['授课老师'])
 
                 # 根据周次计算课程开始时间
                 day_num = Week[one_crs['星期']]
@@ -286,7 +280,7 @@ if __name__ == "__main__":
 
     ##-----------------------------------------------------------##
 
-    # 生成第一周的时间线
+    # 第一周的时间线
     first_week = get_first_week_timeline(first_day)
     # 登录
     login_opener = stu_login(index_url, sid, pwd)
