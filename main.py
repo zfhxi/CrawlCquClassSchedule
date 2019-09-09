@@ -1,25 +1,24 @@
 #!/home/julian/Apps/anaconda3/envs/mylab/bin/python
 # -*- encoding: utf-8 -*-
 '''
-@File    :   main.py
-@Time    :   2019/09/02 12:56:27
+@File    :   main_dev.py
+@Time    :   2019/09/09 23:56:51
 @Author  :   zfhxi
-@Version :   v1.2
+@Version :   v1.2.1
 @Contact :   zifeihanxi@hotmailcom
 '''
+
 
 
 import http.cookiejar as cookielib
 import urllib.request as urllibre
 import urllib.parse as urllibpar
 import hashlib
-import os
 from bs4 import BeautifulSoup
 import re
 from icalendar import Calendar, Event, vDatetime
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 import pytz
-from pytz import UTC
 
 
 def pwd_md5(sid, pwd):
@@ -36,15 +35,6 @@ def pwd_md5(sid, pwd):
     return get_md5(sid + get_md5(pwd)[0:30].upper()+schoolcode)[0:30].upper()
 
 
-def save_to_file(filename, str):
-    '''
-    写入字符串到文件中
-    '''
-    fh = open(filename, 'w')
-    fh.write(str)
-    fh.close()
-
-
 def stu_login(index_url, stu_id, stu_pwd):
     '''
     通过学号密码登录教务网
@@ -57,7 +47,6 @@ def stu_login(index_url, stu_id, stu_pwd):
         'efdfdfuuyyuuckjg': pwd_md5(stu_id, stu_pwd)
     }).encode("utf-8")
     req = urllibre.Request(url=index_url, data=postdata)
-    # res = opener.open(req)
     opener.open(req)
     return opener
 
@@ -75,17 +64,6 @@ def cat_crs_tab_webpage(login_opener, semester, crs_tab_url):
     res = login_opener.open(req)
     page_str = res.read().decode('gb2312')
     return page_str
-
-
-def read_file_as_str(filepath):
-    '''
-    读取文件内容为字符串
-    '''
-    if not os.path.isfile(filepath):
-        raise TypeError(filepath + " does not exist")
-
-    all_the_text = open(filepath).read()
-    return all_the_text
 
 
 def get_first_week_timeline(first_day):
@@ -139,18 +117,18 @@ def cat_course_table_as_lists(doc, infoDictList):
         del td[0]
         del td[1:8]
         for p_td in td[:]:
-            #获取标签的文本内容
+            # 获取标签的文本内容
             cell = p_td.getText().split('\n')[0]
             # 如果文本不为空，加入table列表
             if len(cell) > 0:
                 row.append(cell)
             # 如果获取标签的文本为空，那么推测标签有hidevalue属性,并且hidevalue的值同上一标签
             else:
-                cell=p_td.get('hidevalue')
+                cell = p_td.get('hidevalue')
                 row.append(cell)
         crs_table.append(row)
     # 实验课
-    if(len(tables)==2):
+    if(len(tables) == 2):
         tab = tables[1]
         trs = tab.find_all('tr')
         for tr in trs:
@@ -164,12 +142,10 @@ def cat_course_table_as_lists(doc, infoDictList):
                 if len(cell) > 0:
                     row.append(cell)
                 else:
-                    cell=p_td.get('hidevalue')
+                    cell = p_td.get('hidevalue')
                     row.append(cell)
             crs_table.append(row)
     return crs_table
-
-
 
 
 def cat_course_table_as_dicts(crs_tab):
@@ -236,8 +212,8 @@ def ics_maker(crs_dicts, Time):
     # 时区指定
     tz_utc_8 = pytz.timezone('Asia/Shanghai')
     cal = Calendar()
-    cal.add('version','2.0')
-    cal.add('x-wr-timezone',tz_utc_8)
+    cal.add('version', '2.0')
+    cal.add('x-wr-timezone', tz_utc_8)
     for one_crs in crs_dicts:
         for lesson_num in one_crs['节数']:
             if(lesson_num > 11):
@@ -246,7 +222,8 @@ def ics_maker(crs_dicts, Time):
                 tmp_event = Event()
                 tmp_event.add('summary', one_crs['课程名称'])
                 # 取消日程详情项显示授课老师姓名, 原因: 部分日历程序不显示详情
-                tmp_event.add('location', one_crs['上课地点']+' '+one_crs['授课老师'])
+                tmp_event.add(
+                    'location', one_crs['上课地点']+' '+one_crs['授课老师']+' 第'+str(week_num)+'周')
                 # tmp_event.add('description', one_crs['授课老师'])
 
                 # 根据周次计算课程开始时间
@@ -268,7 +245,7 @@ if __name__ == "__main__":
     # 学号
     sid = '2017xxxx'
     # 密码
-    pwd = '********'
+    pwd = '*******'
     # 当前学期代号
     current_semester = '20190'
     # 开学第一天
