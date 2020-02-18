@@ -4,7 +4,7 @@
 @File    :   main_dev.py
 @Time    :   2019/09/09 23:56:51
 @Author  :   zfhxi
-@Version :   v1.2.1
+@Version :   v1.2.2
 @Contact :   zifeihanxi@hotmailcom
 '''
 
