@@ -223,7 +223,7 @@ def ics_maker(crs_dicts, Time):
                 tmp_event.add('summary', one_crs['课程名称'])
                 # 取消日程详情项显示授课老师姓名, 原因: 部分日历程序不显示详情
                 tmp_event.add(
-                    'location', one_crs['上课地点']+' '+one_crs['授课老师']+' 第'+str(week_num)+'周')
+                    'location', '%s %s 第%d周' % (one_crs['上课地点'],one_crs['授课老师'],week_num))
                 # tmp_event.add('description', one_crs['授课老师'])
 
                 # 根据周次计算课程开始时间
@@ -245,11 +245,11 @@ if __name__ == "__main__":
     # 学号
     sid = '2017xxxx'
     # 密码
-    pwd = '*******'
+    pwd = '**********'
     # 当前学期代号
-    current_semester = '20190'
+    current_semester = '20191'
     # 开学第一天
-    first_day = date(2019, 9, 2)
+    first_day = date(2020, 2, 17)
     # 教务网登录主页
     index_url = 'http://202.202.1.41/_data/index_login.aspx'
     # 课表查看页面
