@@ -2,6 +2,14 @@
 
 从重庆大学教务网爬取课表信息，并转存为ics文件,方便导入到手机系统自带的日历APP。
 
+# Preview
+
+以下是结合滴答清单的使用效果：
+
+![](https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fd4c808a4-3bd6-406d-a7d6-7919a78be8a6%2FUntitled.png?table=block&id=9cd334f6-2769-4a38-b919-5fef25c8bae4&width=670&cache=v2)
+
+![](https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fb5ff44ed-4433-4d93-a7ab-1d42e0a8f17e%2FUntitled.png?table=block&id=825700f6-71fb-417c-bec6-3ac06bfa45f0&width=670&cache=v2)
+
 # Usage
 
 ## 搭配环境
